@@ -13,12 +13,8 @@ If you just want to play, you don't have to compile anything.
 1. **Open GitHub** in a browser: <https://github.com/Jas-Jas-Yuan-debug/mac-game-by-claude-code>
    (Or go to <https://github.com> and search the top bar for `mac-game-by-claude-code` — pick the one owned by `Jas-Jas-Yuan-debug`.)
 2. On the right side of the repo page, click **Releases** (or open `https://github.com/Jas-Jas-Yuan-debug/mac-game-by-claude-code/releases`). If there is no Releases section, scroll down to the project's `downloads/` folder and click the file directly.
-3. Download the package for your OS:
-   - macOS → `ClaudeGame-mac.dmg` (universal — works on Apple Silicon and Intel)
-   - Windows → `ClaudeGame-windows.zip`
-4. Install:
-   - **macOS:** double-click the `.dmg`, then drag `ClaudeGame.app` into `/Applications`.
-   - **Windows:** unzip anywhere and double-click `claudegame.exe`.
+3. Download `ClaudeGame-mac.dmg` (universal — works on Apple Silicon and Intel).
+4. Double-click the `.dmg`, then drag `ClaudeGame.app` into `/Applications`.
 
 ### macOS: the Apple security warning on first launch
 
@@ -30,15 +26,26 @@ or, on newer macOS:
 
 > *应用程序 "ClaudeGame" 无法打开。* &nbsp;(with only an **OK / 好** button — no "Open" option)
 
-This is **Gatekeeper**. The app isn't signed with a paid Apple Developer ID, so macOS quarantines it on download. The reliable way to clear it (works on every macOS version including the strict newer ones) is one Terminal command:
+This is **Gatekeeper**. The app isn't signed with a paid Apple Developer ID, so macOS quarantines it on download and may also strip the inner binary's execute bit. The reliable fix is two Terminal commands:
 
 ```bash
+chmod -R +x /Applications/ClaudeGame.app/Contents/MacOS/
 xattr -dr com.apple.quarantine /Applications/ClaudeGame.app
+open /Applications/ClaudeGame.app
 ```
 
-(If you didn't drag the app into `/Applications`, replace the path — e.g. `~/Downloads/ClaudeGame.app`.) After running it, double-click `ClaudeGame.app` normally — no more warning.
+The first restores execute permission on the binary (the dialog with only a single OK button means the execute bit was lost during download/unzip). The second clears the quarantine flag. The third launches via `open`, which bypasses a few Finder sanity checks.
 
-**Alternative** (no Terminal): open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to the ClaudeGame entry. You'll have to enter your password. Older macOS additionally lets you right-click the `.app` → **Open** → confirm.
+If you didn't drag the app into `/Applications`, replace `/Applications/ClaudeGame.app` with the actual path — e.g. `~/Downloads/ClaudeGame.app`.
+
+**Still blocked?** Re-sign the bundle with an ad-hoc signature and try again:
+
+```bash
+codesign --force --deep --sign - /Applications/ClaudeGame.app
+open /Applications/ClaudeGame.app
+```
+
+**Alternative** (no Terminal at all): open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to the ClaudeGame entry. You'll have to enter your password. Older macOS additionally lets you right-click the `.app` → **Open** → confirm.
 
 **Don't double-click `claudegame_server`.** That file (if you see it in a build folder) is the headless game server — a Unix executable with no GUI, meant for terminal use only. macOS Finder will mis-detect it and try to open it in TextEdit, giving you a "Unicode (UTF-8) 不适用" error. Ignore it. `ClaudeGame.app` already runs an embedded server in-process when you click **HOST LOCAL GAME**.
 
